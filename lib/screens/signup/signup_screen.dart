@@ -54,48 +54,23 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
           ),
-          CustomVisibility(
-            key: controller.spinnerVisibilityKey,
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: const Color(0xcc000000),
-              child: Center(
-                child: LoadingAnimationWidget.dotsTriangle(
-                  color: const Color(0xfff0722e),
-                  size: 50,
-                ),
-              ),
-            ),
-          ),
+          Obx(() {
+            return controller.loading.value
+                ? Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: const Color(0xcc000000),
+                    child: Center(
+                      child: LoadingAnimationWidget.dotsTriangle(
+                        color: const Color(0xfff0722e),
+                        size: 50,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink();
+          }),
         ],
       ),
-    );
-  }
-}
-
-class CustomVisibility extends StatefulWidget {
-  final Widget child;
-  const CustomVisibility({super.key, required this.child});
-
-  @override
-  State<CustomVisibility> createState() => CustomVisibilityState();
-}
-
-class CustomVisibilityState extends State<CustomVisibility> {
-  bool _isVisible = false;
-
-  void toggleVisibility() {
-    setState(() {
-      _isVisible = !_isVisible;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Visibility(
-      visible: _isVisible,
-      child: widget.child
     );
   }
 }

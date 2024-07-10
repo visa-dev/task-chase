@@ -9,8 +9,11 @@ import 'package:task_chase/screens/signup/signup_controller.dart';
 import 'package:task_chase/utils/constants/colors.dart';
 import 'package:task_chase/utils/constants/sizes.dart';
 import 'package:task_chase/utils/constants/texts.dart';
-import 'package:task_chase/utils/extentions/color_scheme.dart';
 import 'package:task_chase/utils/helpers/helper_functions.dart';
+
+import 'package:country_picker/country_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class SignupUserDataForm extends StatelessWidget {
   const SignupUserDataForm({
@@ -96,69 +99,29 @@ class SignupUserDataForm extends StatelessWidget {
                 ),
               ),
               const InputLabel(labelText: "Country"),
-              SizedBox(
-                width: double.infinity,
-                child: Obx(
-                  () => DropdownButtonFormField(
-                    items: const [
-                      DropdownMenuItem(
-                          value: "sri-lanka", child: Text("Sri lanka")),
-                      DropdownMenuItem(
-                          value: "australia", child: Text("Australia")),
-                    ],
-                    value: controller.country.value,
-                    onChanged: (value) => {controller.country.value = value!},
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    decoration: InputDecoration(
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          width: 1,
-                          color: Theme.of(context).colorScheme.textFieldBorder,
-                        ),
+              GestureDetector(
+                onTap: () {
+                  showCountryPicker(
+                    context: context,
+                    showPhoneCode: true,
+
+                    onSelect: (Country country) {
+                      controller
+                          .changeCountry(country.displayNameNoCountryCode);
+                    },
+                  );
+                },
+                child: Container(
+                    width: double.infinity,
+
+                    // Example color to visualize the GestureDetector area
+                    child: Obx(
+                      () => InputField(
+                        hintText: controller.country.value,
+                        enabled: false,
+                        suffixIcon: Icons.arrow_drop_down,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          width: 1,
-                          color: Theme.of(context).colorScheme.textFieldBorder,
-                        ),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          width: 1,
-                          color: Theme.of(context).colorScheme.textFieldBorder,
-                        ),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          width: 1,
-                          color: Theme.of(context).colorScheme.textFieldBorder,
-                        ),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          width: 1,
-                          color: Color(0xfff13b52),
-                        ),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          width: 1.5,
-                          color: Colors.red,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 15,
-                      ),
-                    ),
-                  ),
-                ),
+                    )),
               ),
             ],
           ),

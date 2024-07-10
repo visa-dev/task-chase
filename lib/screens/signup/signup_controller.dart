@@ -11,39 +11,75 @@ import 'package:quickalert/quickalert.dart';
 
 class SignupController extends GetxController {
   static SignupController get instance => Get.find();
+  GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
+
   final deviceStorage = GetStorage();
-  final loading = true.obs;
+  final loading = false.obs;
+
+  void setLoading(bool value) {
+    loading.value = value;
+  }
 
   final email = TextEditingController();
   final firstName = TextEditingController();
   final lastName = TextEditingController();
   final userName = TextEditingController();
   final password = TextEditingController();
-  final country = "sri-lanka".obs;
+  final country = "Select country".obs;
   final address = TextEditingController();
   final nic = TextEditingController();
   final hidePassword = true.obs;
   final privacyPolicy = false.obs;
 
-  Map<String, dynamic> get userdata => {
-        "email": email.text,
-        "firstName": firstName.text,
-        "lastName": lastName.text,
-        "userName": userName.text,
-        "password": password.text,
-        "country": country.value,
-        "address": address.text,
-        "idDocument": {"doc": "nic", "number": nic.text},
-        "location": {"lat": 7.253244853726137, "lng": 80.34613556195156},
-      };
+  void changeCountry(String value) {
+    print('Selected country: $value');
+    country.value = value;
+    print('Selected country: $country');
 
-  GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
-  GlobalKey<CustomVisibilityState> spinnerVisibilityKey = GlobalKey<CustomVisibilityState>();
+  }
+
+  Map<String, dynamic> get userdata => {
+    "email": email.text,
+    "firstName": firstName.text,
+    "lastName": lastName.text,
+    "userName": userName.text,
+    "password": password.text,
+    "country": country.value,
+    "address": address.text,
+    "idDocument": {"doc": "nic", "number": nic.text},
+    "location": {"lat": 7.253244853726137, "lng": 80.34613556195156},
+  };
+
+  @override
+  void onClose() {
+    // Dispose of all TextEditingController instances
+    email.dispose();
+    firstName.dispose();
+    lastName.dispose();
+    userName.dispose();
+    password.dispose();
+    address.dispose();
+    nic.dispose();
+
+    super.onClose();
+  }
+
+  // Clear form inputs
+  void clearInputs() {
+    email.clear();
+    firstName.clear();
+    lastName.clear();
+    userName.clear();
+    password.clear();
+    address.clear();
+    nic.clear();
+  }
 
   Future<void> signup() async {
     try {
       final isConnected = await NetworkManager.instance.isConnected();
       if (kDebugMode) {}
+
       if (!isConnected) {
         KSnackBar.errorSnackBar(
             title: "Network Error",
@@ -59,24 +95,15 @@ class SignupController extends GetxController {
         KSnackBar.waringSnackBar(
             title: "Accept Privacy Policy",
             message:
-                "In order to create account,You must have to read and accept the Privacy Policy & Terms of Use");
+            "In order to create an account, you must read and accept the Privacy Policy & Terms of Use");
         return;
       } else {
         deviceStorage.writeIfNull("privacyPolicyAgreement", true);
       }
 
-      // if (loading.value) {
-      //   QuickAlert.show(
-      //     context: Get.context!,
-      //     type: QuickAlertType.loading,
-      //     title: 'Loading',
-      //     //text: 'Fetching your data',
-      //   );
-      // }
+      setLoading(true); // Start loading
 
-      spinnerVisibilityKey.currentState?.toggleVisibility();
-
-      //send request to api for signup user
+      // Send request to API for user signup
       await ClientRequest.sendRequest(
           path: "api/users/auth/signup",
           onResponse: signupSuccess,
@@ -84,27 +111,26 @@ class SignupController extends GetxController {
           body: userdata,
           timeOut: 10);
 
-      // loading.value = false;
     } catch (e) {
-      spinnerVisibilityKey.currentState?.toggleVisibility();
+      setLoading(false);
       KSnackBar.errorSnackBar(title: "Oh Snap", message: e.toString());
     }
   }
 
   void signupSuccess(dynamic apiResponse) {
-    spinnerVisibilityKey.currentState?.toggleVisibility();
-    //var userModel = UserResponse.fromJson(apiResponse.data["user"]);
+    clearInputs();
+    setLoading(false);
     QuickAlert.show(
         context: Get.context!,
         type: QuickAlertType.success,
         title: apiResponse.title,
-        text: apiResponse.message);
+        text: apiResponse.message
+        
+    );
   }
 
   void signupFailed(Exception e) {
-    spinnerVisibilityKey.currentState?.toggleVisibility();
-    // KSnackBar.errorSnackBar(title: e.title,message: e.message);
-    loading.value = false;
+    setLoading(false);
     if (e is ValidationFailException) {
       QuickAlert.show(
           context: Get.context!,
@@ -123,6 +149,12 @@ class SignupController extends GetxController {
           type: QuickAlertType.error,
           title: e.title,
           text: e.message);
+    } else {
+      QuickAlert.show(
+          context: Get.context!,
+          type: QuickAlertType.error,
+          title: "Signup Failed",
+          text: e.toString());
     }
   }
 }
